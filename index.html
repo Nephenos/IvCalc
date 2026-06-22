@@ -3,64 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokémon GO IV App</title>
+<title>IV Scanner PRO</title>
 
 <style>
-body {
+:root{
+    --bg:#0b132b;
+    --card:#ffffff10;
+    --accent:#ff3b3b;
+    --gold:#ffd700;
+}
+
+body{
     margin:0;
-    font-family: Arial;
-    background: #0b132b;
+    font-family:Arial;
+    background:var(--bg);
     color:white;
     display:flex;
 }
 
-/* MENU LATERAL */
-.sidebar {
-    width:200px;
+/* SIDEBAR */
+.sidebar{
+    width:220px;
     background:#111a33;
     height:100vh;
     padding:20px;
     box-sizing:border-box;
 }
 
-.sidebar h2 {
-    color:#ffd700;
-    font-size:18px;
+.sidebar h2{
+    color:var(--gold);
+    margin-bottom:20px;
 }
 
-.menu {
-    margin-top:20px;
-}
-
-.menu div {
-    padding:10px;
-    margin:5px 0;
-    cursor:pointer;
+.menu div{
+    padding:12px;
+    margin:8px 0;
     background:#1b2a52;
-    border-radius:8px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:0.2s;
 }
 
-.menu div:hover {
-    background:#2a3f77;
+.menu div:hover{
+    background:#2c3f77;
 }
 
-/* CONTEUDO */
-.content {
+/* CONTENT */
+.content{
     flex:1;
     padding:20px;
 }
 
-.card {
-    background:#ffffff10;
-    backdrop-filter: blur(10px);
+/* CARD */
+.card{
+    background:var(--card);
+    backdrop-filter: blur(12px);
     padding:20px;
-    border-radius:15px;
-    max-width:400px;
+    border-radius:18px;
+    max-width:420px;
 }
 
-/* INPUTS */
-input {
-    width:90%;
+/* INPUT */
+input{
+    width:92%;
     padding:10px;
     margin:5px 0;
     border:none;
@@ -68,32 +73,38 @@ input {
     text-align:center;
 }
 
-button {
+/* BUTTON */
+button{
     width:100%;
-    padding:10px;
-    margin-top:10px;
+    padding:12px;
     border:none;
     border-radius:10px;
-    background:#ff3b3b;
+    background:var(--accent);
     color:white;
+    font-size:16px;
     cursor:pointer;
+    margin-top:10px;
 }
 
-/* IMAGEM */
-img {
+button:hover{
+    filter:brightness(1.1);
+}
+
+/* IMAGE */
+#img{
     width:90px;
     margin-top:10px;
 }
 
-/* RESULTADO */
-.result {
+/* RESULT */
+.result{
     margin-top:10px;
     font-size:18px;
     font-weight:bold;
 }
 
-/* BARRA */
-.bar {
+/* BAR */
+.bar{
     height:10px;
     border-radius:10px;
     background:limegreen;
@@ -101,70 +112,94 @@ img {
     transition:0.3s;
 }
 
-/* LISTA */
-.item {
-    background:#ffffff10;
-    margin:10px 0;
-    padding:10px;
-    border-radius:10px;
+/* TAGS */
+.tag{
+    font-size:12px;
+    margin:3px 0;
     display:flex;
     align-items:center;
-    justify-content:space-between;
+    gap:6px;
 }
 
-.item img {
-    width:50px;
+/* LIST ITEM */
+.item{
+    background:var(--card);
+    padding:12px;
+    margin:10px 0;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    gap:10px;
 }
 
-.del {
-    background:red;
+/* DELETE BUTTON */
+.del{
+    margin-left:auto;
+    width:35px;
+    height:35px;
+    border-radius:10px;
     border:none;
+    background:#ff3b3b;
     color:white;
-    padding:5px 8px;
-    border-radius:6px;
     cursor:pointer;
 }
 
-.deleteAll {
-    background:#ff5555;
+/* CHECKBOX AREA */
+.flags label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    margin:4px 0;
 }
 </style>
 </head>
 
 <body>
 
-<!-- MENU -->
+<!-- SIDEBAR -->
 <div class="sidebar">
-<h2>Pokémon IV</h2>
+<h2>IV Scanner</h2>
 
 <div class="menu">
-    <div onclick="show('calc')">🧮 Calculadora</div>
-    <div onclick="show('list')">📋 Lista</div>
+<div onclick="show('calc')">🧮 Calculadora</div>
+<div onclick="show('list')">📋 Lista</div>
 </div>
 </div>
 
-<!-- CONTEUDO -->
+<!-- CONTENT -->
 <div class="content">
 
 <!-- CALCULADORA -->
 <div id="calc">
 
 <div class="card">
-    <h2>IV Calculator</h2>
+<h2>Pokémon GO IV</h2>
 
-    <input id="name" placeholder="Pokémon" oninput="search()">
-    <div id="suggest"></div>
+<input id="name" placeholder="Pokémon" oninput="search()">
+<div id="suggest"></div>
 
-    <img id="img">
+<img id="img">
 
-    <input id="atk" placeholder="ATK (0-15)">
-    <input id="def" placeholder="DEF (0-15)">
-    <input id="hp" placeholder="HP (0-15)">
+<input id="atk" placeholder="ATK (0-15)">
+<input id="def" placeholder="DEF (0-15)">
+<input id="hp" placeholder="HP (0-15)">
 
-    <button onclick="calc()">Calcular</button>
+<div class="flags">
+<label><input type="checkbox" id="shiny"> ⭐ Shiny</label>
+<label><input type="checkbox" id="shadow"> 🌑 Sombrio</label>
+<label><input type="checkbox" id="purified"> 💠 Purificado</label>
+<label><input type="checkbox" id="lucky"> 🍀 Sortudo</label>
+<label><input type="checkbox" id="mega"> ⚡ Mega</label>
+<label><input type="checkbox" id="gigantamax"> 🏔️ Gigantamax</label>
+<label><input type="checkbox" id="dynamax"> 💥 Dinamax</label>
+</div>
 
-    <div class="result" id="result"></div>
-    <div class="bar" id="bar"></div>
+<button onclick="calc()">Calcular IV</button>
+
+<div class="result" id="result"></div>
+<div class="bar" id="bar"></div>
+
 </div>
 
 </div>
@@ -173,8 +208,7 @@ img {
 <div id="list" style="display:none">
 
 <h2>Histórico</h2>
-
-<button class="deleteAll" onclick="clearAll()">🗑️ Apagar tudo</button>
+<button onclick="clearAll()">🗑️ Limpar tudo</button>
 
 <div id="history"></div>
 
@@ -188,102 +222,125 @@ let cacheImg = "";
 let history = JSON.parse(localStorage.getItem("ivs")) || [];
 
 /* MENU */
-function show(page){
-    document.getElementById("calc").style.display = page === "calc" ? "block":"none";
-    document.getElementById("list").style.display = page === "list" ? "block":"none";
+function show(p){
+    document.getElementById("calc").style.display = p==="calc"?"block":"none";
+    document.getElementById("list").style.display = p==="list"?"block":"none";
     render();
 }
 
-/* BUSCA POKEMON */
+/* SEARCH */
 async function search(){
     let name = document.getElementById("name").value.toLowerCase();
-    if(name.length < 2) return;
+    if(name.length<2) return;
 
     try{
         let res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
         let data = await res.json();
 
-        let list = data.results.filter(p => p.name.startsWith(name)).slice(0,5);
+        let list = data.results.filter(p=>p.name.startsWith(name)).slice(0,5);
 
         let box = document.getElementById("suggest");
-        box.innerHTML = "";
+        box.innerHTML="";
 
         list.forEach(p=>{
             box.innerHTML += `<div onclick="selectPoke('${p.name}')">${p.name}</div>`;
         });
 
-        if(list[0]) load(list[0].name);
+        if(list[0]) load(list[0].name,false);
 
     }catch{}
 }
 
-async function selectPoke(name){
-    document.getElementById("name").value = name;
-    document.getElementById("suggest").innerHTML = "";
-    load(name);
+function selectPoke(name){
+    document.getElementById("name").value=name;
+    document.getElementById("suggest").innerHTML="";
+    load(name,false);
 }
 
-/* CARREGA IMAGEM */
-async function load(name){
+/* LOAD IMAGE */
+async function load(name, shiny){
     try{
         let res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
         let data = await res.json();
 
-        document.getElementById("img").src = data.sprites.front_default;
-        cacheImg = data.sprites.front_default;
+        let img = shiny ? data.sprites.front_shiny : data.sprites.front_default;
+
+        document.getElementById("img").src = img;
+        cacheImg = img;
 
     }catch{}
 }
 
-/* CALCULO */
+/* CALC */
 function calc(){
 
     let name = document.getElementById("name").value;
+
     let atk = +document.getElementById("atk").value;
     let def = +document.getElementById("def").value;
     let hp = +document.getElementById("hp").value;
 
+    let shiny=document.getElementById("shiny").checked;
+    let shadow=document.getElementById("shadow").checked;
+    let purified=document.getElementById("purified").checked;
+    let lucky=document.getElementById("lucky").checked;
+    let mega=document.getElementById("mega").checked;
+    let gigantamax=document.getElementById("gigantamax").checked;
+    let dynamax=document.getElementById("dynamax").checked;
+
     let iv = atk+def+hp;
     let pct = (iv*100)/45;
 
-    let item = {
-        name,
-        iv,
-        pct,
-        img: cacheImg,
-        date: new Date().toLocaleString()
+    let item={
+        name, iv, pct,
+        img:cacheImg,
+        shiny,shadow,purified,lucky,mega,gigantamax,dynamax,
+        date:new Date().toLocaleString()
     };
 
     history.push(item);
     history.sort((a,b)=>b.pct-a.pct);
 
-    localStorage.setItem("ivs", JSON.stringify(history));
+    localStorage.setItem("ivs",JSON.stringify(history));
 
-    document.getElementById("result").innerHTML =
-        `${name} — ${iv}/45 (${Math.round(pct)}%)`;
+    document.getElementById("result").innerHTML=
+    `${name} — ${iv}/45 (${Math.round(pct)}%)`;
 
-    document.getElementById("bar").style.width = pct + "%";
+    document.getElementById("bar").style.width=pct+"%";
 
     render();
 }
 
-/* LISTA */
+/* RENDER */
 function render(){
-    let box = document.getElementById("history");
+    let box=document.getElementById("history");
     if(!box) return;
 
-    box.innerHTML = "";
+    box.innerHTML="";
 
     history.forEach((p,i)=>{
-        box.innerHTML += `
+
+        let tags="";
+
+        if(p.shiny) tags+="⭐ Shiny<br>";
+        if(p.shadow) tags+="🌑 Sombrio<br>";
+        if(p.purified) tags+="💠 Purificado<br>";
+        if(p.lucky) tags+="🍀 Sortudo<br>";
+        if(p.mega) tags+="⚡ Mega<br>";
+        if(p.gigantamax) tags+="🏔️ Gigantamax<br>";
+        if(p.dynamax) tags+="💥 Dinamax<br>";
+
+        box.innerHTML+=`
         <div class="item">
             <img src="${p.img}">
             <div>
                 <b>${p.name}</b><br>
                 ${p.iv}/45 (${Math.round(p.pct)}%)<br>
-                <small>${p.date}</small>
+                <small>${p.date}</small><br>
+                ${tags}
             </div>
-            <button class="del" onclick="del(${i})">X</button>
+
+            <button class="del" onclick="del(${i})">🗑️</button>
         </div>`;
     });
 }
@@ -291,13 +348,13 @@ function render(){
 /* DELETE */
 function del(i){
     history.splice(i,1);
-    localStorage.setItem("ivs", JSON.stringify(history));
+    localStorage.setItem("ivs",JSON.stringify(history));
     render();
 }
 
-/* CLEAR ALL */
+/* CLEAR */
 function clearAll(){
-    history = [];
+    history=[];
     localStorage.removeItem("ivs");
     render();
 }
