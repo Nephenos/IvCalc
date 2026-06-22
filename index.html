@@ -21,7 +21,7 @@ body{
     display:flex;
 }
 
-/* SIDEBAR RETRÁTIL */
+/* SIDEBAR */
 .sidebar{
     width:220px;
     background:#111a33;
@@ -33,14 +33,22 @@ body{
 }
 
 .sidebar.closed{
-    width:60px;
+    width:70px;
 }
 
+/* HEADER */
 .sidebar h2{
     color:var(--gold);
     font-size:16px;
+    transition:0.3s;
 }
 
+.sidebar.closed h2{
+    opacity:0;
+    height:0;
+}
+
+/* MENU */
 .menu div{
     padding:12px;
     margin:8px 0;
@@ -48,13 +56,16 @@ body{
     border-radius:10px;
     cursor:pointer;
     font-size:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
 }
 
-.menu div:hover{
-    background:#2c3f77;
+.sidebar.closed .menu span{
+    display:none;
 }
 
-/* TOGGLE BTN */
+/* TOGGLE */
 .toggle{
     background:#ff3b3b;
     border:none;
@@ -63,6 +74,7 @@ body{
     border-radius:8px;
     cursor:pointer;
     margin-bottom:10px;
+    width:100%;
 }
 
 /* CONTENT */
@@ -71,30 +83,27 @@ body{
     padding:20px;
 }
 
-/* CALC LAYOUT */
-.calc-box{
-    display:flex;
-    gap:15px;
-}
-
+/* CARD */
 .card{
     background:var(--card);
     backdrop-filter: blur(12px);
     padding:20px;
     border-radius:18px;
-    max-width:500px;
+    max-width:520px;
     display:flex;
     gap:15px;
 }
 
-/* IMAGE AREA */
+/* IMAGE */
 .poke-area{
     text-align:center;
-    width:150px;
+    width:180px;
 }
 
 #img{
-    width:120px;
+    width:160px;
+    height:160px;
+    object-fit:contain;
 }
 
 .percent{
@@ -103,7 +112,7 @@ body{
     color:var(--gold);
 }
 
-/* INPUT AREA */
+/* INPUTS */
 .inputs{
     flex:1;
 }
@@ -117,21 +126,14 @@ input{
     text-align:center;
 }
 
-button.calc{
+button{
     width:100%;
     padding:12px;
     border:none;
     border-radius:10px;
     background:var(--accent);
     color:white;
-    font-size:16px;
     cursor:pointer;
-}
-
-/* RESULT */
-.result{
-    margin-top:10px;
-    font-weight:bold;
 }
 
 /* BAR */
@@ -142,18 +144,18 @@ button.calc{
     width:0%;
 }
 
-/* LISTA */
+/* ITEM */
 .item{
     background:var(--card);
     padding:12px;
     margin:10px 0;
     border-radius:12px;
     display:flex;
-    align-items:center;
     gap:10px;
+    align-items:flex-start;
 }
 
-/* DELETE CENTRALIZADO */
+/* DELETE */
 .del{
     width:34px;
     height:34px;
@@ -168,19 +170,19 @@ button.calc{
     justify-content:center;
 }
 
-/* CHECKBOX HORIZONTAL */
+/* FLAGS */
 .flags-list{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
-    margin-top:5px;
+    margin-top:6px;
+    font-size:11px;
 }
 
 .flags-list label{
     display:flex;
     align-items:center;
     gap:4px;
-    font-size:11px;
 }
 </style>
 </head>
@@ -195,10 +197,16 @@ button.calc{
 <h2>IV Scanner</h2>
 
 <div class="menu">
-<div onclick="show('calc')">🧮 Calc</div>
-<div onclick="show('list')">📋 Lista</div>
+
+<div onclick="show('calc')">
+    <span>🧮 Calculadora</span>
 </div>
 
+<div onclick="show('list')">
+    <span>📋 Lista</span>
+</div>
+
+</div>
 </div>
 
 <!-- CONTENT -->
@@ -209,13 +217,11 @@ button.calc{
 
 <div class="card">
 
-<!-- IMAGEM -->
 <div class="poke-area">
     <img id="img">
-    <div class="percent" id="percent">0%</div>
+    <div class="percent" id="percent">0% (0/45)</div>
 </div>
 
-<!-- INPUTS -->
 <div class="inputs">
 
 <input id="name" placeholder="Pokémon" oninput="search()">
@@ -224,9 +230,8 @@ button.calc{
 <input id="def" placeholder="DEF (0-15)">
 <input id="hp" placeholder="HP (0-15)">
 
-<button class="calc" onclick="calc()">Calcular IV</button>
+<button onclick="calc()">Calcular</button>
 
-<div class="result" id="result"></div>
 <div class="bar" id="bar"></div>
 
 </div>
@@ -252,20 +257,32 @@ button.calc{
 let cacheImg="";
 let history=JSON.parse(localStorage.getItem("ivs"))||[];
 
-/* MENU */
+/* TOGGLE MENU */
 function toggleMenu(){
     document.getElementById("sidebar").classList.toggle("closed");
 }
 
+/* SHOW */
 function show(p){
     document.getElementById("calc").style.display=p==="calc"?"block":"none";
     document.getElementById("list").style.display=p==="list"?"block":"none";
     render();
 }
 
-/* CAPITALIZE */
-function cap(str){
-    return str.charAt(0).toUpperCase()+str.slice(1);
+/* LOAD NORMAL + SHINY */
+async function load(name, shiny=false){
+    try{
+        let res=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        let data=await res.json();
+
+        let img = shiny
+        ? data.sprites.other["official-artwork"].front_shiny
+        : data.sprites.other["official-artwork"].front_default;
+
+        document.getElementById("img").src=img;
+        cacheImg=img;
+
+    }catch{}
 }
 
 /* SEARCH */
@@ -273,39 +290,13 @@ async function search(){
     let name=document.getElementById("name").value.toLowerCase();
     if(name.length<2) return;
 
-    try{
-        let res=await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
-        let data=await res.json();
-
-        let list=data.results.filter(p=>p.name.startsWith(name)).slice(0,5);
-
-        if(list[0]) load(list[0].name,false);
-
-    }catch{}
-}
-
-/* LOAD IMG (BULBAPEDIA STYLE FALLBACK) */
-async function load(name,shiny){
-    try{
-        let res=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-        let data=await res.json();
-
-        let img=shiny?data.sprites.front_shiny:data.sprites.front_default;
-
-        document.getElementById("img").src=img;
-        cacheImg=img;
-
-    }catch{
-        let fallback=`https://bulbapedia.bulbagarden.net/wiki/File:${name}_MS.png`;
-        document.getElementById("img").src=fallback;
-        cacheImg=fallback;
-    }
+    load(name,false);
 }
 
 /* CALC */
 function calc(){
 
-    let name=cap(document.getElementById("name").value);
+    let name=document.getElementById("name").value;
 
     let atk=+document.getElementById("atk").value;
     let def=+document.getElementById("def").value;
@@ -334,17 +325,31 @@ function calc(){
 
     localStorage.setItem("ivs",JSON.stringify(history));
 
-    document.getElementById("percent").innerText=Math.round(pct)+"%";
-    document.getElementById("result").innerText=`${name} — ${iv}/45`;
+    document.getElementById("percent").innerText=
+        `${Math.round(pct)}% (${iv}/45)`;
 
     document.getElementById("bar").style.width=pct+"%";
 
     render();
 }
 
-/* UPDATE FLAGS */
+/* UPDATE FLAGS + SHINY FIX */
 function updateFlag(i,key,val){
+
     history[i][key]=val;
+
+    // 🔥 CORREÇÃO SHINY IMAGEM
+    if(key==="shiny"){
+        load(history[i].name,val).then(()=>{
+
+            history[i].img=cacheImg;
+            localStorage.setItem("ivs",JSON.stringify(history));
+            render();
+
+        });
+        return;
+    }
+
     localStorage.setItem("ivs",JSON.stringify(history));
     render();
 }
@@ -376,7 +381,7 @@ function render(){
         box.innerHTML+=`
         <div class="item">
 
-            <img src="${p.img}" width="50">
+            <img src="${p.img}" width="55">
 
             <div style="flex:1">
 
