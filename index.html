@@ -3,32 +3,66 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokémon GO IV Scanner PRO</title>
+<title>Pokémon GO IV App</title>
 
 <style>
 body {
     margin:0;
     font-family: Arial;
-    background: linear-gradient(135deg,#1b1f3b,#0b132b);
+    background: #0b132b;
     color:white;
     display:flex;
-    justify-content:center;
 }
 
-.container { width:360px; padding:20px; }
+/* MENU LATERAL */
+.sidebar {
+    width:200px;
+    background:#111a33;
+    height:100vh;
+    padding:20px;
+    box-sizing:border-box;
+}
+
+.sidebar h2 {
+    color:#ffd700;
+    font-size:18px;
+}
+
+.menu {
+    margin-top:20px;
+}
+
+.menu div {
+    padding:10px;
+    margin:5px 0;
+    cursor:pointer;
+    background:#1b2a52;
+    border-radius:8px;
+}
+
+.menu div:hover {
+    background:#2a3f77;
+}
+
+/* CONTEUDO */
+.content {
+    flex:1;
+    padding:20px;
+}
 
 .card {
     background:#ffffff10;
     backdrop-filter: blur(10px);
     padding:20px;
     border-radius:15px;
-    text-align:center;
+    max-width:400px;
 }
 
+/* INPUTS */
 input {
     width:90%;
     padding:10px;
-    margin:5px;
+    margin:5px 0;
     border:none;
     border-radius:10px;
     text-align:center;
@@ -37,61 +71,89 @@ input {
 button {
     width:100%;
     padding:10px;
+    margin-top:10px;
     border:none;
     border-radius:10px;
     background:#ff3b3b;
     color:white;
-}
-
-img { width:90px; margin-top:10px; }
-
-.bar {
-    height:10px;
-    border-radius:10px;
-    width:0%;
-    background:limegreen;
-    transition:0.3s;
-}
-
-.suggestions {
-    background:#00000055;
-    margin-top:5px;
-    border-radius:10px;
-    max-height:120px;
-    overflow:auto;
-    font-size:12px;
-}
-
-.suggestions div {
-    padding:5px;
     cursor:pointer;
 }
 
-.history { margin-top:20px; }
-
-.item {
-    background:#ffffff10;
-    padding:10px;
+/* IMAGEM */
+img {
+    width:90px;
     margin-top:10px;
-    border-radius:10px;
-    display:flex;
-    gap:10px;
-    align-items:center;
 }
 
-.item img { width:50px; }
+/* RESULTADO */
+.result {
+    margin-top:10px;
+    font-size:18px;
+    font-weight:bold;
+}
+
+/* BARRA */
+.bar {
+    height:10px;
+    border-radius:10px;
+    background:limegreen;
+    width:0%;
+    transition:0.3s;
+}
+
+/* LISTA */
+.item {
+    background:#ffffff10;
+    margin:10px 0;
+    padding:10px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.item img {
+    width:50px;
+}
+
+.del {
+    background:red;
+    border:none;
+    color:white;
+    padding:5px 8px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.deleteAll {
+    background:#ff5555;
+}
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- MENU -->
+<div class="sidebar">
+<h2>Pokémon IV</h2>
+
+<div class="menu">
+    <div onclick="show('calc')">🧮 Calculadora</div>
+    <div onclick="show('list')">📋 Lista</div>
+</div>
+</div>
+
+<!-- CONTEUDO -->
+<div class="content">
+
+<!-- CALCULADORA -->
+<div id="calc">
 
 <div class="card">
-    <h2>IV Scanner PRO</h2>
+    <h2>IV Calculator</h2>
 
-    <input id="name" placeholder="Pokémon" oninput="autoSearch()">
-    <div class="suggestions" id="suggestions"></div>
+    <input id="name" placeholder="Pokémon" oninput="search()">
+    <div id="suggest"></div>
 
     <img id="img">
 
@@ -101,13 +163,21 @@ img { width:90px; margin-top:10px; }
 
     <button onclick="calc()">Calcular</button>
 
-    <div id="result"></div>
+    <div class="result" id="result"></div>
     <div class="bar" id="bar"></div>
 </div>
 
-<div class="history">
-    <h3>Histórico</h3>
-    <div id="list"></div>
+</div>
+
+<!-- LISTA -->
+<div id="list" style="display:none">
+
+<h2>Histórico</h2>
+
+<button class="deleteAll" onclick="clearAll()">🗑️ Apagar tudo</button>
+
+<div id="history"></div>
+
 </div>
 
 </div>
@@ -117,73 +187,64 @@ img { width:90px; margin-top:10px; }
 let cacheImg = "";
 let history = JSON.parse(localStorage.getItem("ivs")) || [];
 
-async function autoSearch() {
+/* MENU */
+function show(page){
+    document.getElementById("calc").style.display = page === "calc" ? "block":"none";
+    document.getElementById("list").style.display = page === "list" ? "block":"none";
+    render();
+}
+
+/* BUSCA POKEMON */
+async function search(){
     let name = document.getElementById("name").value.toLowerCase();
+    if(name.length < 2) return;
 
-    if (name.length < 2) return;
-
-    try {
+    try{
         let res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
         let data = await res.json();
 
-        let matches = data.results
-            .filter(p => p.name.startsWith(name))
-            .slice(0, 6);
+        let list = data.results.filter(p => p.name.startsWith(name)).slice(0,5);
 
-        let box = document.getElementById("suggestions");
+        let box = document.getElementById("suggest");
         box.innerHTML = "";
 
-        matches.forEach(m => {
-            box.innerHTML += `<div onclick="selectPoke('${m.name}')">${m.name}</div>`;
+        list.forEach(p=>{
+            box.innerHTML += `<div onclick="selectPoke('${p.name}')">${p.name}</div>`;
         });
 
-        // busca imagem do primeiro match
-        if (matches[0]) loadPokemon(matches[0].name);
+        if(list[0]) load(list[0].name);
 
-    } catch {}
+    }catch{}
 }
 
-async function selectPoke(name) {
+async function selectPoke(name){
     document.getElementById("name").value = name;
-    document.getElementById("suggestions").innerHTML = "";
-    loadPokemon(name);
+    document.getElementById("suggest").innerHTML = "";
+    load(name);
 }
 
-async function loadPokemon(name) {
-    try {
+/* CARREGA IMAGEM */
+async function load(name){
+    try{
         let res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
         let data = await res.json();
 
         document.getElementById("img").src = data.sprites.front_default;
-
         cacheImg = data.sprites.front_default;
-    } catch {}
+
+    }catch{}
 }
 
-function rank(p) {
-    if (p === 100) return "4★";
-    if (p >= 80) return "3★";
-    if (p >= 50) return "2★";
-    if (p > 0) return "1★";
-    return "0★";
-}
-
-function pvpRank(p) {
-    if (p >= 90) return "🔥 Top PvP";
-    if (p >= 75) return "👍 Bom PvP";
-    return "❌ Ruim PvP";
-}
-
-function calc() {
+/* CALCULO */
+function calc(){
 
     let name = document.getElementById("name").value;
-
     let atk = +document.getElementById("atk").value;
     let def = +document.getElementById("def").value;
     let hp = +document.getElementById("hp").value;
 
-    let iv = atk + def + hp;
-    let pct = (iv * 100) / 45;
+    let iv = atk+def+hp;
+    let pct = (iv*100)/45;
 
     let item = {
         name,
@@ -194,26 +255,27 @@ function calc() {
     };
 
     history.push(item);
-
     history.sort((a,b)=>b.pct-a.pct);
 
     localStorage.setItem("ivs", JSON.stringify(history));
 
     document.getElementById("result").innerHTML =
-        `${name}<br>${iv}/45 (${Math.round(pct)}%)<br>${rank(pct)} | ${pvpRank(pct)}`;
+        `${name} — ${iv}/45 (${Math.round(pct)}%)`;
 
-    let bar = document.getElementById("bar");
-    bar.style.width = pct + "%";
+    document.getElementById("bar").style.width = pct + "%";
 
     render();
 }
 
-function render() {
-    let list = document.getElementById("list");
-    list.innerHTML = "";
+/* LISTA */
+function render(){
+    let box = document.getElementById("history");
+    if(!box) return;
 
-    history.forEach(p => {
-        list.innerHTML += `
+    box.innerHTML = "";
+
+    history.forEach((p,i)=>{
+        box.innerHTML += `
         <div class="item">
             <img src="${p.img}">
             <div>
@@ -221,8 +283,23 @@ function render() {
                 ${p.iv}/45 (${Math.round(p.pct)}%)<br>
                 <small>${p.date}</small>
             </div>
+            <button class="del" onclick="del(${i})">X</button>
         </div>`;
     });
+}
+
+/* DELETE */
+function del(i){
+    history.splice(i,1);
+    localStorage.setItem("ivs", JSON.stringify(history));
+    render();
+}
+
+/* CLEAR ALL */
+function clearAll(){
+    history = [];
+    localStorage.removeItem("ivs");
+    render();
 }
 
 render();
