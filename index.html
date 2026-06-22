@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IV Calculator Pokémon GO</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #1b1f3b, #0b132b);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .card {
+        background: #ffffff10;
+        backdrop-filter: blur(10px);
+        padding: 25px;
+        border-radius: 20px;
+        width: 300px;
+        text-align: center;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+        font-size: 20px;
+        margin-bottom: 20px;
+        color: #ffd700;
+    }
+
+    input {
+        width: 90%;
+        padding: 10px;
+        margin: 5px 0;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    button {
+        margin-top: 10px;
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 12px;
+        background: #ff3b3b;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #ff1f1f;
+    }
+
+    .bar-container {
+        width: 100%;
+        background: #333;
+        border-radius: 10px;
+        margin-top: 15px;
+        overflow: hidden;
+    }
+
+    .bar {
+        height: 15px;
+        width: 0%;
+        background: linear-gradient(90deg, #ff3b3b, #ffd700, #00ff88);
+        transition: 0.5s;
+    }
+
+    #resultado {
+        margin-top: 10px;
+        font-size: 18px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>IV Calculator Pokémon GO</h1>
+
+    <input type="number" id="atk" placeholder="ATK (0-15)" max="15">
+    <input type="number" id="def" placeholder="DEF (0-15)" max="15">
+    <input type="number" id="hp" placeholder="HP (0-15)" max="15">
+
+    <button onclick="calcular()">Calcular IV</button>
+
+    <div id="resultado"></div>
+
+    <div class="bar-container">
+        <div class="bar" id="bar"></div>
+    </div>
+</div>
+
+<script>
+function calcular() {
+    let atk = Number(document.getElementById("atk").value);
+    let def = Number(document.getElementById("def").value);
+    let hp = Number(document.getElementById("hp").value);
+
+    let ivs = atk + def + hp;
+    let pct = (ivs * 100) / 45;
+
+    document.getElementById("resultado").innerHTML =
+        "IV: " + ivs + "/45 (" + Math.round(pct) + "%)";
+
+    document.getElementById("bar").style.width = pct + "%";
+}
+</script>
+
+</body>
+</html>
