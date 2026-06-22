@@ -145,30 +145,7 @@ button{
     align-items:center;
     gap:4px;
 }
-</style>
-</head>
-
-<body>
-
-<!-- SIDEBAR -->
-<div class="sidebar" id="sidebar">
-
-<button onclick="toggleMenu()">☰</button>
-
-<h2>IV Calculator</h2>
-
-<div class="menu">
-
-    <div onclick="show('calc')">
-        <span class="icon">🧮</span>
-        <span class="text">Calculadora</span>
-    </div>
-
-    <div onclick="show('list')">
-        <span class="icon">📋</span>
-        <span class="text">Lista</span>
-    </div>
-.menu div{
+    .menu div{
     padding:12px;
     margin:8px 0;
     background:#1b2a52;
@@ -204,6 +181,30 @@ button{
 .sidebar.closed .menu div{
     justify-content:center;
 }
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+
+<button onclick="toggleMenu()">☰</button>
+
+<h2>IV Calculator</h2>
+
+<div class="menu">
+
+    <div onclick="show('calc')">
+        <span class="icon">🧮</span>
+        <span class="text">Calculadora</span>
+    </div>
+
+    <div onclick="show('list')">
+        <span class="icon">📋</span>
+        <span class="text">Lista</span>
+    </div>
+
 </div>
 </div>
 
