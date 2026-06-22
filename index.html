@@ -168,7 +168,42 @@ button{
         <span class="icon">📋</span>
         <span class="text">Lista</span>
     </div>
+.menu div{
+    padding:12px;
+    margin:8px 0;
+    background:#1b2a52;
+    border-radius:10px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
 
+.icon{
+    min-width:24px;
+    text-align:center;
+    font-size:20px;
+}
+
+.text{
+    white-space:nowrap;
+}
+
+.sidebar.closed{
+    width:70px;
+}
+
+.sidebar.closed h2{
+    display:none;
+}
+
+.sidebar.closed .text{
+    display:none;
+}
+
+.sidebar.closed .menu div{
+    justify-content:center;
+}
 </div>
 </div>
 
