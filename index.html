@@ -48,7 +48,7 @@ body{
     backdrop-filter: blur(12px);
     padding:20px;
     border-radius:18px;
-    max-width:600px;
+    max-width:520px;
     display:flex;
     gap:15px;
 }
@@ -65,10 +65,20 @@ body{
     object-fit:contain;
 }
 
+/* PERCENT */
 .percent{
     margin-top:8px;
     font-weight:bold;
     color:var(--gold);
+}
+
+/* 🔥 BAR AGORA FICOU ABAIXO DO TEXTO */
+.bar{
+    height:10px;
+    border-radius:10px;
+    background:limegreen;
+    width:0%;
+    margin-top:8px;
 }
 
 /* INPUTS */
@@ -95,48 +105,7 @@ button{
     cursor:pointer;
 }
 
-/* BAR */
-.bar{
-    height:10px;
-    border-radius:10px;
-    background:limegreen;
-    width:0%;
-}
-
-/* GRAPH */
-.graph{
-    margin-top:15px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-
-.barStat{
-    display:flex;
-    align-items:center;
-    gap:8px;
-}
-
-.label{
-    width:40px;
-    font-size:12px;
-}
-
-.bar2{
-    height:10px;
-    background:#2c3f77;
-    border-radius:8px;
-    flex:1;
-    overflow:hidden;
-}
-
-.fill{
-    height:100%;
-    background:linear-gradient(90deg,#00c6ff,#0072ff);
-    width:0%;
-}
-
-/* LIST */
+/* LIST ITEM */
 .item{
     background:var(--card);
     padding:12px;
@@ -147,6 +116,7 @@ button{
     align-items:flex-start;
 }
 
+/* DELETE */
 .del{
     width:34px;
     height:34px;
@@ -154,59 +124,74 @@ button{
     border:none;
     background:#ff3b3b;
     color:white;
+    font-weight:bold;
     cursor:pointer;
     display:flex;
     align-items:center;
     justify-content:center;
 }
 
+/* FLAGS */
 .flags-list{
     display:flex;
     flex-wrap:wrap;
-    gap:6px;
+    gap:8px;
     margin-top:6px;
     font-size:11px;
+}
+
+.flags-list label{
+    display:flex;
+    align-items:center;
+    gap:4px;
 }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+
+<button onclick="toggleMenu()">☰</button>
+
+<h2>IV Scanner</h2>
+
+<div class="menu">
+<div onclick="show('calc')">🧮 Calculadora</div>
+<div onclick="show('list')">📋 Lista</div>
+</div>
+
+</div>
+
+<!-- CONTENT -->
 <div class="content">
 
 <!-- CALC -->
+<div id="calc">
+
 <div class="card">
 
 <div class="poke-area">
     <img id="img">
+    
+    <!-- 🔥 PORCENTAGEM PRIMEIRO -->
     <div class="percent" id="percent">0% (0/45)</div>
+
+    <!-- 🔥 BARRA AGORA ABAIXO -->
+    <div class="bar" id="bar"></div>
 </div>
 
 <div class="inputs">
 
-<input id="name" placeholder="Pokémon" oninput="loadAuto()">
+<input id="name" placeholder="Pokémon" oninput="search()">
 
-<input id="atk" placeholder="ATK (0-15)" oninput="updateGraph()">
-<input id="def" placeholder="DEF (0-15)" oninput="updateGraph()">
-<input id="hp" placeholder="HP (0-15)" oninput="updateGraph()">
+<input id="atk" placeholder="ATK (0-15)">
+<input id="def" placeholder="DEF (0-15)">
+<input id="hp" placeholder="HP (0-15)">
 
-<button onclick="calc()">Salvar IV</button>
+<button onclick="calc()">Calcular</button>
 
-<div class="graph">
-    <div class="barStat">
-        <div class="label">ATK</div>
-        <div class="bar2"><div class="fill" id="atkBar"></div></div>
-    </div>
-
-    <div class="barStat">
-        <div class="label">DEF</div>
-        <div class="bar2"><div class="fill" id="defBar"></div></div>
-    </div>
-
-    <div class="barStat">
-        <div class="label">HP</div>
-        <div class="bar2"><div class="fill" id="hpBar"></div></div>
-    </div>
 </div>
 
 </div>
@@ -214,7 +199,14 @@ button{
 </div>
 
 <!-- LISTA -->
-<div id="list" style="display:none"></div>
+<div id="list" style="display:none">
+
+<h2>Lista de Pokémons</h2>
+<button onclick="clearAll()">🗑️ Limpar tudo</button>
+
+<div id="history"></div>
+
+</div>
 
 </div>
 
@@ -223,16 +215,26 @@ button{
 let cacheImg="";
 let history=JSON.parse(localStorage.getItem("ivs"))||[];
 
-/* LOAD IMAGE HD */
-async function loadAuto(){
-    let name=document.getElementById("name").value.toLowerCase();
-    if(name.length<2) return;
+/* MENU */
+function toggleMenu(){
+    document.getElementById("sidebar").classList.toggle("closed");
+}
 
+function show(p){
+    document.getElementById("calc").style.display=p==="calc"?"block":"none";
+    document.getElementById("list").style.display=p==="list"?"block":"none";
+    render();
+}
+
+/* LOAD HD */
+async function load(name, shiny=false){
     try{
         let res=await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
         let data=await res.json();
 
-        let img=data.sprites.other["official-artwork"].front_default;
+        let img=shiny
+        ? data.sprites.other["official-artwork"].front_shiny
+        : data.sprites.other["official-artwork"].front_default;
 
         document.getElementById("img").src=img;
         cacheImg=img;
@@ -240,20 +242,12 @@ async function loadAuto(){
     }catch{}
 }
 
-/* GRAPH UPDATE */
-function updateGraph(){
+/* SEARCH */
+async function search(){
+    let name=document.getElementById("name").value.toLowerCase();
+    if(name.length<2) return;
 
-    let atk=Math.min(+document.getElementById("atk").value||0,15);
-    let def=Math.min(+document.getElementById("def").value||0,15);
-    let hp=Math.min(+document.getElementById("hp").value||0,15);
-
-    document.getElementById("atkBar").style.width=(atk/15*100)+"%";
-    document.getElementById("defBar").style.width=(def/15*100)+"%";
-    document.getElementById("hpBar").style.width=(hp/15*100)+"%";
-
-    let total=atk+def+hp;
-    document.getElementById("percent").innerText=
-        `${Math.round(total/45*100)}% (${total}/45)`;
+    load(name,false);
 }
 
 /* CALC */
@@ -265,26 +259,75 @@ function calc(){
     let def=+document.getElementById("def").value;
     let hp=+document.getElementById("hp").value;
 
-    let total=atk+def+hp;
-    let pct=(total*100)/45;
+    let iv=atk+def+hp;
+    let pct=(iv*100)/45;
 
     let item={
         name,
-        atk,def,hp,
-        total,
+        iv,
         pct,
-        img:cacheImg
+        img:cacheImg,
+        shiny:false,
+        shadow:false,
+        purified:false,
+        lucky:false,
+        mega:false,
+        gigantamax:false,
+        dynamax:false,
+        date:new Date().toLocaleString()
     };
 
     history.push(item);
+    history.sort((a,b)=>b.pct-a.pct);
+
     localStorage.setItem("ivs",JSON.stringify(history));
 
-    updateGraph();
+    document.getElementById("percent").innerText=
+        `${Math.round(pct)}% (${iv}/45)`;
+
+    document.getElementById("bar").style.width=pct+"%";
+
+    render();
 }
 
-/* RENDER LIST */
-function renderList(){
-    let box=document.getElementById("list");
+/* UPDATE FLAGS */
+function updateFlag(i,key,val){
+
+    history[i][key]=val;
+
+    if(key==="shiny"){
+        load(history[i].name,val).then(()=>{
+            history[i].img=cacheImg;
+            localStorage.setItem("ivs",JSON.stringify(history));
+            render();
+        });
+        return;
+    }
+
+    localStorage.setItem("ivs",JSON.stringify(history));
+    render();
+}
+
+/* DELETE */
+function del(i){
+    history.splice(i,1);
+    localStorage.setItem("ivs",JSON.stringify(history));
+    render();
+}
+
+/* CLEAR */
+function clearAll(){
+    history=[];
+    localStorage.removeItem("ivs");
+    render();
+}
+
+/* RENDER */
+function render(){
+
+    let box=document.getElementById("history");
+    if(!box) return;
+
     box.innerHTML="";
 
     history.forEach((p,i)=>{
@@ -292,22 +335,34 @@ function renderList(){
         box.innerHTML+=`
         <div class="item">
 
-            <img src="${p.img}" width="60">
+            <img src="${p.img}" width="55">
 
             <div style="flex:1">
+
                 <b>${p.name}</b><br>
-                ${p.total}/45 (${Math.round(p.pct)}%)
+                ${p.iv}/45 (${Math.round(p.pct)}%)<br>
 
                 <div class="flags-list">
-                    ATK ${p.atk} | DEF ${p.def} | HP ${p.hp}
+
+                    <label><input type="checkbox" onchange="updateFlag(${i},'shiny',this.checked)" ${p.shiny?'checked':''}>⭐</label>
+                    <label><input type="checkbox" onchange="updateFlag(${i},'shadow',this.checked)" ${p.shadow?'checked':''}>🌑</label>
+                    <label><input type="checkbox" onchange="updateFlag(${i},'purified',this.checked)" ${p.purified?'checked':''}>💠</label>
+                    <label><input type="checkbox" onchange="updateFlag(${i},'lucky',this.checked)" ${p.lucky?'checked':''}>🍀</label>
+                    <label><input type="checkbox" onchange="updateFlag(${i},'mega',this.checked)" ${p.mega?'checked':''}>⚡</label>
+                    <label><input type="checkbox" onchange="updateFlag(${i},'gigantamax',this.checked)" ${p.gigantamax?'checked':''}>🏔️</label>
+                    <label><input type="checkbox" onchange="updateFlag(${i},'dynamax',this.checked)" ${p.dynamax?'checked':''}>💥</label>
+
                 </div>
+
             </div>
+
+            <button class="del" onclick="del(${i})">✕</button>
 
         </div>`;
     });
 }
 
-renderList();
+render();
 
 </script>
 
